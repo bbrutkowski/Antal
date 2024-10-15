@@ -1,0 +1,72 @@
+﻿@using Antal.Models
+@model IEnumerable<TodoTask>
+
+@{
+    ViewData["Title"] = "Task list";
+}
+
+<h2>Tasks for day: @ViewBag.SelectedDate</h2>
+
+<form method="get">
+    <label for="date">Select date:</label>
+    <input type="date" name="date" id="date" value="@ViewBag.SelectedDate" />
+    <button type="submit" class="btn btn-primary">Show tasks</button> 
+</form>
+
+<a asp-action="AddTask" asp-route-date="@ViewBag.SelectedDate" class="btn btn-primary">Add new task</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Deadline</th>
+            <th>Completed</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Title</td>
+                <td>@item.Description</td>
+                <td>@item.DueDate.ToString("yyyy-MM-dd")</td>
+                <td>
+                    @if (item.IsCompleted)
+                    {
+                        <i class="bi bi-check-circle-fill text-success"></i> 
+                    }
+                    else
+                    {
+                        <i class="bi bi-x-circle-fill text-danger"></i> 
+                    }
+                </td>
+                <td>
+                    <a href="@Url.Action("Edit", "Home", new { id = item.Id })" class="btn btn-warning">Edit</a>
+                    <a href="@Url.Action("Delete", "Home", new { id = item.Id })" class="btn btn-danger">Delete</a>
+                    @if (!item.IsCompleted) 
+                    {
+                        <a href="@Url.Action("MarkAsCompleted", "Home", new { id = item.Id })" class="btn btn-success">Mark as completed</a>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            var upcomingTasks = @Html.Raw(Json.Serialize(ViewBag.UpcomingTasks));
+
+            if (upcomingTasks.length > 0) {
+                var taskList = upcomingTasks.map(function (task) {
+                    return task.title + " - deadline: " + new Date(task.dueDate).toLocaleDateString();
+                }).join("\n");
+
+                alert("You have upcoming tasks to complete:\n" + taskList);
+            }
+        });
+    </script>
+}
